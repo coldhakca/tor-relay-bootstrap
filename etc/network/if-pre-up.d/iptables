@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Load iptables rules before interfaces are brought online
+# This ensures that we are always protected by the firewall
+#
+# Note: if bad rules are inadvertently (or purposely) saved it could block
+# access to the server except via the serial tty interface.
+#
+
+RESTORE=/sbin/iptables-restore
+STAT=/usr/bin/stat
+IPSTATE=/etc/iptables.rules
+
+test -x $RESTORE || exit 0
+test -x $STAT || exit 0
+
+## Check permissions and ownership (rw------- for root)
+#if test `$STAT --format="%a" $IPSTATE` -ne "600"; then
+#  echo "Permissions for $IPSTATE must be 600 (rw-------)"
+#  exit 0
+#fi
+
+# Since only the owner can read/write to the file, we can trust that it is
+# secure. We need not worry about group permissions since they should be
+# zeroed per our previous check; but we must make sure root owns it.
+if test `$STAT --format="%u" $IPSTATE` -ne "0"; then
+  echo "The superuser must have ownership for $IPSTATE (uid 0)"
+  exit 0
+fi
+
+# Now we are ready to restore the tables
+$RESTORE < $IPSTATE
+
