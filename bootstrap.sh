@@ -18,8 +18,8 @@ fi
 
 # update software
 echo "== Updating software"
-sudo apt-get update
-sudo apt-get full-upgrade -y
+apt-get update
+apt-get full-upgrade -y
 
 # install tor and related packages
 echo "== Installing Tor and related packages"
