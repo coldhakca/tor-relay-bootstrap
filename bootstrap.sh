@@ -31,11 +31,16 @@ cp $PWD/etc/tor/torrc /etc/tor/torrc
 
 # configure firewall rules
 echo "== Configuring firewall rules"
-cp $PWD/etc/iptables.rules /etc/iptables.rules
-cp $PWD/etc/network/if-pre-up.d/iptables /etc/network/if-pre-up.d/iptables
-chmod 600 /etc/iptables.rules
-chmod +x /etc/network/if-pre-up.d/iptables
-iptables-restore < /etc/iptables.rules
+apt-get install -y debconf-utils
+echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | debconf-set-selections
+echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | debconf-set-selections
+apt-get install -y iptables iptables-persistent
+cp $PWD/etc/iptables/rules.v4 /etc/iptables/rules.v4
+cp $PWD/etc/iptables/rules.v6 /etc/iptables/rules.v6
+chmod 600 /etc/iptables/rules.v4
+chmod 600 /etc/iptables/rules.v6
+iptables-restore < /etc/iptables/rules.v4
+ip6tables-restore < /etc/iptables/rules.v6
 
 # configure automatic updates
 echo "== Configuring unattended upgrades"
