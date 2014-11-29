@@ -4,7 +4,7 @@
 COMMIT
 
 *filter
-:INPUT ACCEPT [0:0]
+:INPUT DROP [0:0]
 :FORWARD DROP [0:0]
 :OUTPUT ACCEPT [0:0]
 
@@ -18,20 +18,14 @@ COMMIT
 -A INPUT -p tcp --dport 9001 -j ACCEPT
 -A INPUT -p tcp --dport 9030 -j ACCEPT
 
-## allow several ICMP types 
--A INPUT -p icmp -m icmp --icmp-type host-unreachable -j ACCEPT
--A INPUT -p icmp -m icmp --icmp-type port-unreachable -j ACCEPT
--A INPUT -p icmp -m icmp --icmp-type fragmentation-needed -j ACCEPT
--A INPUT -p icmp -m icmp --icmp-type source-quench -j ACCEPT
--A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s -j ACCEPT
--A INPUT -p icmp --icmp-type echo-request -j DROP
+## allow ICMP
+# TODO: lock this down a bit
+-A INPUT -p ipv6-icmp -j ACCEPT
 
 ## to log denied packets uncomment this line
 #-A INPUT -m limit --limit 5/min -j LOG --log-prefix "iptables denied: " --log-level 7
 
-## drop non-established TCP
--A INPUT -p tcp --syn -j DROP
-
-## allows all udp in, but avoids conntrack
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -m state --state INVALID -j DROP
 
 COMMIT
