@@ -54,7 +54,7 @@ cp $PWD/etc/apt/apt.conf.d/20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
 service unattended-upgrades restart
 
 # configure sshd
-$ORIG_USER = $(logname)
+ORIG_USER=$(logname)
 if [ -n "$ORIG_USER" ]; then
 	echo "== Configuring sshd"
 	# only allow the current user to SSH in
