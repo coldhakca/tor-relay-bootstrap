@@ -15,7 +15,7 @@
 
 ## ratelimit ICMP echo, allow all others
 -A INPUT -p ipv6-icmp --icmpv6-type echo-request -m limit --limit 2/s -j ACCEPT
--A INPUT -p ipv6-icmp --icmpc6-type echo-request -j DROP
+-A INPUT -p ipv6-icmp --icmpv6-type echo-request -j DROP
 -A INPUT -p ipv6-icmp -j ACCEPT
 
 ## to log denied packets uncomment this line
