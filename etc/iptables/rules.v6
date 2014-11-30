@@ -1,8 +1,3 @@
-*raw
--A PREROUTING -j NOTRACK
--A OUTPUT -j NOTRACK
-COMMIT
-
 *filter
 :INPUT DROP [0:0]
 :FORWARD DROP [0:0]
@@ -18,8 +13,9 @@ COMMIT
 -A INPUT -p tcp --dport 9001 -j ACCEPT
 -A INPUT -p tcp --dport 9030 -j ACCEPT
 
-## allow ICMP
-# TODO: lock this down a bit
+## ratelimit ICMP echo, allow all others
+-A INPUT -p ipv6-icmp --icmp-type echo-request -m limit --limit 2/s -j ACCEPT
+-A INPUT -p ipv6-icmp --icmp-type echo-request -j DROP
 -A INPUT -p ipv6-icmp -j ACCEPT
 
 ## to log denied packets uncomment this line

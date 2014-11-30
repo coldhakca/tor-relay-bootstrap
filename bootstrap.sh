@@ -8,18 +8,21 @@ fi
 
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# update software
+echo "== Updating software"
+apt-get update
+apt-get dist-upgrade -y
+
+apt-get install -y lsb-release
+
 # add official Tor repository
 if ! grep -q "http://deb.torproject.org/torproject.org" /etc/apt/sources.list; then
     echo "== Adding the official Tor repository"
     echo "deb http://deb.torproject.org/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
     gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
     gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
+    apt-get update
 fi
-
-# update software
-echo "== Updating software"
-apt-get update
-apt-get full-upgrade -y
 
 # install tor and related packages
 echo "== Installing Tor and related packages"
