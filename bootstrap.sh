@@ -45,17 +45,41 @@ chmod 600 /etc/iptables/rules.v6
 iptables-restore < /etc/iptables/rules.v4
 ip6tables-restore < /etc/iptables/rules.v6
 
+apt-get install -y fail2ban
+
 # configure automatic updates
 echo "== Configuring unattended upgrades"
 apt-get install -y unattended-upgrades apt-listchanges
 cp $PWD/etc/apt/apt.conf.d/20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
 service unattended-upgrades restart
 
+# configure sshd
+ORIG_USER=$(logname)
+if [ -n "$ORIG_USER" ]; then
+	echo "== Configuring sshd"
+	# only allow the current user to SSH in
+	echo "AllowUsers $ORIG_USER" >> /etc/ssh/sshd_config
+	echo "  - SSH login restricted to user: $ORIG_USER"
+	if grep -q "Accepted publickey for $ORIG_USER" /var/log/auth.log; then
+		# user has logged in with SSH keys so we can disable password authentication
+		sed -i '/^#\?PasswordAuthentication/c\PasswordAuthentication no' /etc/ssh/sshd_config
+		echo "  - SSH password authentication disabled"
+		if [ $ORIG_USER == "root" ]; then
+			# user logged in as root directly (rather than using su/sudo) so make sure root login is enabled
+			sed -i '/^#\?PermitRootLogin/c\PermitRootLogin yes' /etc/ssh/sshd_config
+		fi
+	else
+		# user logged in with a password rather than keys
+		echo "  - You do not appear to be using SSH key authentication.  You should set this up manually now."
+	fi
+	service ssh reload
+else
+	echo "== Could not configure sshd automatically.  You will need to do this manually."
+fi
+
 # final instructions
 echo ""
 echo "== Try SSHing into this server again in a new window, to confirm the firewall isn't broken"
-echo ""
-echo "== If you haven't already, you should use SSH key authentication"
 echo ""
 echo "== Edit /etc/tor/torrc"
 echo "  - Set Address, Nickname, Contact Info, and MyFamily for your Tor relay"
