@@ -53,6 +53,16 @@ apt-get install -y unattended-upgrades apt-listchanges
 cp $PWD/etc/apt/apt.conf.d/20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
 service unattended-upgrades restart
 
+# install tlsdate
+if [ "$(lsb_release -cs)" == "wheezy" ]; then
+	# tlsdate isn't in wheezy
+	if ! grep -q "wheezy-backports" /etc/apt/sources.list; then
+		echo "deb http://ftp.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list
+		apt-get update
+	fi
+fi
+apt-get install -y tlsdate
+
 # configure sshd
 ORIG_USER=$(logname)
 if [ -n "$ORIG_USER" ]; then
