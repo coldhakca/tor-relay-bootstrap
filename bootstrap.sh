@@ -61,12 +61,18 @@ update-grub
 # install tlsdate
 if [ "$(lsb_release -cs)" == "wheezy" ]; then
 	# tlsdate isn't in wheezy
-	if ! grep -q "wheezy-backports" /etc/apt/sources.list; then
-		echo "deb http://ftp.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list
-		apt-get update
+	if [ "$((echo 3.5; uname -r) | sort -c 2>&1)" == "" ]; then
+		# if we have seccomp (>= linux 3.5) we can backport it
+		if ! grep -q "wheezy-backports" /etc/apt/sources.list; then
+			echo "deb http://ftp.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list
+			apt-get update
+		fi
+		apt-get install -y tlsdate
 	fi
+else
+	# later than wheezy
+	apt-get install -y tlsdate
 fi
-apt-get install -y tlsdate
 
 # configure sshd
 ORIG_USER=$(logname)
