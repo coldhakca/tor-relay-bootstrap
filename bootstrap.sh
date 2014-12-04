@@ -53,6 +53,11 @@ apt-get install -y unattended-upgrades apt-listchanges
 cp $PWD/etc/apt/apt.conf.d/20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
 service unattended-upgrades restart
 
+# install apparmor
+apt-get install -y apparmor apparmor-profiles apparmor-utils
+sed -i.bak 's/GRUB_CMDLINE_LINUX="\(.*\)"/GRUB_CMDLINE_LINUX="\1 apparmor=1 security=apparmor"/' /etc/default/grub
+update-grub
+
 # install tlsdate
 if [ "$(lsb_release -cs)" == "wheezy" ]; then
 	# tlsdate isn't in wheezy
@@ -93,10 +98,10 @@ echo "== Try SSHing into this server again in a new window, to confirm the firew
 echo ""
 echo "== Edit /etc/tor/torrc"
 echo "  - Set Address, Nickname, Contact Info, and MyFamily for your Tor relay"
-echo "  - Then run: service tor restart"
 echo "  - Optional: include a Bitcoin address in the 'ContactInfo' line"
 echo "  - This will enable you to recieve donations from OnionTip.com"
 echo ""
 echo "== Register your new Tor relay at Tor Weather (https://weather.torproject.org/)"
 echo "   to get automatic emails about its status"
-
+echo ""
+echo "== REBOOT THIS SERVER"
