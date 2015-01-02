@@ -20,6 +20,8 @@ RelayBandwidthBurst 100 MBytes
 SocksPort 0
 SocksPolicy reject *
 
+ExitPolicy reject *:*
+
 Log notice file /var/log/tor/notices.log
 DataDirectory /var/lib/tor
 RunAsDaemon 1
