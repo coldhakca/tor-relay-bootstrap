@@ -13,10 +13,10 @@ echo "== Updating software"
 apt-get update
 apt-get dist-upgrade -y
 
-apt-get install -y lsb-release
+apt-get install -y lsb-release apt-transport-https
 
 # add official Tor repository
-if ! grep -q "http://deb.torproject.org/torproject.org" /etc/apt/sources.list; then
+if ! grep -q "https://deb.torproject.org/torproject.org" /etc/apt/sources.list; then
     echo "== Adding the official Tor repository"
     echo "deb http://deb.torproject.org/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
     gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
@@ -109,5 +109,9 @@ echo "  - This will enable you to receive donations from OnionTip.com"
 echo ""
 echo "== Register your new Tor relay at Tor Weather (https://weather.torproject.org/)"
 echo "   to get automatic emails about its status"
+echo ""
+echo "== Consider having /etc/apt/sources.list update over HTTPS and/or HTTPS+Tor"
+echo "   see https://guardianproject.info/2014/10/16/reducing-metadata-leakage-from-software-updates/"
+echo "   for more details"
 echo ""
 echo "== REBOOT THIS SERVER"
