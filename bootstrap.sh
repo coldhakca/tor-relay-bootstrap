@@ -74,6 +74,11 @@ else
 	apt-get install -y tlsdate
 fi
 
+# install monit
+apt-get install -y monit
+cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
+service monit restart
+
 # configure sshd
 ORIG_USER=$(logname)
 if [ -n "$ORIG_USER" ]; then
