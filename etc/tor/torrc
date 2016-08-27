@@ -16,6 +16,8 @@ DirPort 9030
 
 RelayBandwidthRate 30 MBytes
 RelayBandwidthBurst 100 MBytes
+#AccountingMax 32 GB
+#AccountingStart day 00:00
 
 SocksPort 0
 SocksPolicy reject *
