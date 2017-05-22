@@ -71,6 +71,14 @@ ORIG_USER=$(logname)
 if [ -n "$ORIG_USER" ]; then
 	echo "== Configuring sshd"
 	# only allow the current user to SSH in
+	if [ "$ORIG_USER" == "root" ]; then
+		echo "You are currently the root user. It is recommended that you do not use the root user for this."
+		echo "Would you like to continue as the root user? [y/n]"
+		read useroot
+		if [ "$useroot" != "y" ]; then
+			exit 0
+		fi
+	fi
 	echo "AllowUsers $ORIG_USER" >> /etc/ssh/sshd_config
 	echo "  - SSH login restricted to user: $ORIG_USER"
 	if grep -q "Accepted publickey for $ORIG_USER" /var/log/auth.log; then
