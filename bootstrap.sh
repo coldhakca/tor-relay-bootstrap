@@ -1,11 +1,16 @@
 #!/bin/bash
+PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # check for root
+function check_root () {
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root" 1>&2
     exit 1
 fi
+}
 
+# suggest user account
+function suggest_user () {
 ORIG_USER=$(logname)
 if [ "$ORIG_USER" == "root" ]; then
 	echo "Your original user is the root user. It is recommended that you do not use the root user for this. Instead, create a user account and use su/sudo to run bootstrap.sh."
@@ -15,17 +20,20 @@ if [ "$ORIG_USER" == "root" ]; then
 		exit 1
 	fi
 fi
+}
 
-PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # update software
+function update_software() {
 echo "== Updating software"
 apt-get update
 apt-get dist-upgrade -y
 
 apt-get install -y lsb-release apt-transport-https
+}
 
 # add official Tor repository
+function add_sources () {
 if ! grep -q "https://deb.torproject.org/torproject.org" /etc/apt/sources.list; then
     echo "== Adding the official Tor repository"
     echo "deb https://deb.torproject.org/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
@@ -33,16 +41,22 @@ if ! grep -q "https://deb.torproject.org/torproject.org" /etc/apt/sources.list; 
     gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
     apt-get update
 fi
+}
 
 # install tor and related packages
+function install_tor() {
 echo "== Installing Tor and related packages"
 apt-get install -y deb.torproject.org-keyring tor tor-arm tor-geoipdb
 service tor stop
+}
 
 # configure tor
+function configure_tor() {
 cp $PWD/etc/tor/torrc /etc/tor/torrc
+}
 
 # configure firewall rules
+function configure_firewall() {
 echo "== Configuring firewall rules"
 apt-get install -y debconf-utils
 echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | debconf-set-selections
@@ -54,29 +68,41 @@ chmod 600 /etc/iptables/rules.v4
 chmod 600 /etc/iptables/rules.v6
 iptables-restore < /etc/iptables/rules.v4
 ip6tables-restore < /etc/iptables/rules.v6
+}
 
+function install_f2b() {
 apt-get install -y fail2ban
+}
 
 # configure automatic updates
+function auto_update() {
 echo "== Configuring unattended upgrades"
 apt-get install -y unattended-upgrades apt-listchanges
 cp $PWD/etc/apt/apt.conf.d/20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
 service unattended-upgrades restart
+}
 
 # install apparmor
+function install_aa() {
 apt-get install -y apparmor apparmor-profiles apparmor-utils
 sed -i.bak 's/GRUB_CMDLINE_LINUX="\(.*\)"/GRUB_CMDLINE_LINUX="\1 apparmor=1 security=apparmor"/' /etc/default/grub
 update-grub
+}
 
 # install tlsdate
+function install_td() {
 apt-get install -y tlsdate
+}
 
 # install monit
+function install_mt() {
 apt-get install -y monit
 cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
 service monit restart
+}
 
 # configure sshd
+function configure_ssh() {
 if [ -n "$ORIG_USER" ]; then
 	echo "== Configuring sshd"
 	# only allow the current user to SSH in
@@ -98,8 +124,10 @@ if [ -n "$ORIG_USER" ]; then
 else
 	echo "== Could not configure sshd automatically.  You will need to do this manually."
 fi
+}
 
 # final instructions
+function print_final() {
 echo ""
 echo "== Try SSHing into this server again in a new window, to confirm the firewall isn't broken"
 echo ""
@@ -118,3 +146,19 @@ echo "   see https://guardianproject.info/2014/10/16/reducing-metadata-leakage-f
 echo "   for more details"
 echo ""
 echo "== REBOOT THIS SERVER"
+}
+
+check_root &&
+suggest_user &&
+update_software &&
+add_sources &&
+install_tor &&
+configure_tor &&
+configure_firewal &&
+install_f2b &&
+auto_update &&
+install_aa &&
+install_td &&
+install_mt &&
+configure_ssh &&
+print_final 
