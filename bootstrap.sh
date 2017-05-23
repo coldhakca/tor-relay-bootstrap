@@ -6,6 +6,16 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
+ORIG_USER=$(logname)
+if [ "$ORIG_USER" == "root" ]; then
+	echo "Your original user is the root user. It is recommended that you do not use the root user for this. Instead, create a user account and use su/sudo to run bootstrap.sh."
+	echo "Would you like to continue as the root user? [y/n]"
+	read useroot
+	if [ "$useroot" != "y" ]; then
+		exit 1
+	fi
+fi
+
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # update software
@@ -67,18 +77,9 @@ cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
 service monit restart
 
 # configure sshd
-ORIG_USER=$(logname)
 if [ -n "$ORIG_USER" ]; then
 	echo "== Configuring sshd"
 	# only allow the current user to SSH in
-	if [ "$ORIG_USER" == "root" ]; then
-		echo "Your original user is the root user. It is recommended that you do not use the root user for this. Instead, create a user account and use su/sudo to run bootstrap.sh."
-		echo "Would you like to continue as the root user? [y/n]"
-		read useroot
-		if [ "$useroot" != "y" ]; then
-			exit 1
-		fi
-	fi
 	echo "AllowUsers $ORIG_USER" >> /etc/ssh/sshd_config
 	echo "  - SSH login restricted to user: $ORIG_USER"
 	if grep -q "Accepted publickey for $ORIG_USER" /var/log/auth.log; then
