@@ -38,8 +38,13 @@ function add_sources () {
     		echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
     		gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
     		gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
-    		apt-get update
 	fi
+}
+
+# Wait for tor and update sources
+function update_sources() {
+	sleep 10
+	apt-get update
 }
 
 # install tor and related packages
@@ -151,6 +156,7 @@ check_root &&
 suggest_user &&
 update_software &&
 add_sources &&
+update_sources &&
 install_tor &&
 configure_tor &&
 configure_firewall &&
