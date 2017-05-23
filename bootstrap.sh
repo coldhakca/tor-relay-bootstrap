@@ -28,14 +28,14 @@ function update_software() {
 	echo "== Updating software"
 	apt-get update
 	apt-get dist-upgrade -y
-	apt-get install -y lsb-release apt-transport-https
+	apt-get install -y lsb-release apt-transport-tor
 }
 
 # add official Tor repository
 function add_sources () {
-	if ! grep -q "https://deb.torproject.org/torproject.org" /etc/apt/sources.list; then
+	if ! grep -q "tor+http://sdscoq7snqtznauu.onion/torproject.org" /etc/apt/sources.list; then
     		echo "== Adding the official Tor repository"
-    		echo "deb https://deb.torproject.org/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
+    		echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
     		gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
     		gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
     		apt-get update
