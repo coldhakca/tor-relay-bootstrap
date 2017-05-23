@@ -153,7 +153,7 @@ update_software &&
 add_sources &&
 install_tor &&
 configure_tor &&
-configure_firewal &&
+configure_firewall &&
 install_f2b &&
 auto_update &&
 install_aa &&
