@@ -12,7 +12,7 @@ PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # check for root
 function check_root () {
 	if [[ $EUID -ne 0 ]]; then
-    		echo "This script must be run as root" 1>&2
+		echo "This script must be run as root (use su / sudo)" 1>&2
     		exit 1
 	fi
 }
@@ -21,8 +21,8 @@ function check_root () {
 function suggest_user () {
 ORIG_USER=$(logname)
 	if [ "$ORIG_USER" == "root" ]; then
-		echo "Your original user is the root user. It is recommended that you do not use the root user for this. Instead, create a user account and use su/sudo to run bootstrap.sh."
-		echo "Would you like to continue as the root user? [y/n]"
+		echo "It appears that you have logged into this machine as root. If you would like to disable remote root access, create a user account and use su / sudo to run bootstrap.sh."
+		echo "Would you like to continue and allow remote root access? [y/n]"
 		read useroot
 		if [ "$useroot" != "y" ]; then
 			exit 1
