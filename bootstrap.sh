@@ -1,4 +1,12 @@
 #!/bin/bash
+#####################################################################
+#
+# bootstrap.sh
+# -------------------
+# Configures Debian / Ubuntu to be a set-and-forget Tor relay.
+#
+#####################################################################
+
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # check for root
@@ -41,9 +49,10 @@ function add_sources () {
 	fi
 }
 
-# Wait for tor and update sources
+# Update sources
 function update_sources() {
-	sleep 10
+	# wait for tor
+	sleep 5
 	apt-get update
 }
 
