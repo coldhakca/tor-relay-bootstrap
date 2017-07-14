@@ -8,6 +8,7 @@
 #####################################################################
 
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+instances=()
 
 # check for root
 function check_root () {
@@ -19,7 +20,7 @@ function check_root () {
 
 # suggest user account
 function suggest_user () {
-ORIG_USER=$(logname)
+	ORIG_USER=$(logname)
 	if [ "$ORIG_USER" == "root" ]; then
 		echo "It appears that you have logged into this machine as root. If you would like to disable remote root access, create a user account and use su / sudo to run bootstrap.sh."
 		echo "Would you like to continue and allow remote root access? [y/n]"
@@ -63,9 +64,36 @@ function install_tor() {
 	service tor stop
 }
 
-# configure tor
-function configure_tor() {
-	cp $PWD/etc/tor/torrc /etc/tor/torrc
+# create tor instance
+function create_instance(instance) {
+	tor-instance-create $instance
+}
+
+# create one or more tor instances
+function create_instances() {
+	instance=0
+	more=1
+	while [ $more == 1 ]; do
+		create_instance($instance)
+		instances+=($instance)
+		echo "Would you like to create another instance? [y/n]"
+		read response
+		if [ $response != "y" ]; do
+			more=0
+		else
+			instance=$((instance+1))
+		fi
+	done
+}
+
+# create firewall rule for a single instance
+function instance_rules(instance) {
+	# insert rules after ## allow Tor ORPort, DirPort
+	orport=$((instance+9001))
+	dirport=$((instance+9030))
+	sed -i "/## allow Tor ORPort, DirPort/ \
+	-A INPUT -p tcp --dport $orport -j ACCEPT \
+	-A INPUT -p tcp --dport $dirport -j ACCEPT" /etc/iptables/rule.v4
 }
 
 # configure firewall rules
@@ -77,6 +105,7 @@ function configure_firewall() {
 	apt-get install -y iptables iptables-persistent
 	cp $PWD/etc/iptables/rules.v4 /etc/iptables/rules.v4
 	cp $PWD/etc/iptables/rules.v6 /etc/iptables/rules.v6
+	# for each instance call instance_rules
 	chmod 600 /etc/iptables/rules.v4
 	chmod 600 /etc/iptables/rules.v6
 	iptables-restore < /etc/iptables/rules.v4
