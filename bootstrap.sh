@@ -51,6 +51,7 @@ function add_sources() {
 			echo "== Switching to Debian's onion service mirrors"
 			echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs` main" >> /etc/apt/sources.list
 			echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs`-updates main">> /etc/apt/sources.list
+			echo "deb tor+http://sgvtcaew4bxjd7ln.onion/debian-security `lsb_release -cs`/updates main" >> /etc/apt/sources.list
 			gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
 			gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
 		elif ["$DISTRO"=="Ubuntu"]; then
