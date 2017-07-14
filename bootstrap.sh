@@ -8,7 +8,6 @@
 #####################################################################
 
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-DISTRO=$(lsb_release -si)
 instances=()
 
 # check for root
@@ -42,6 +41,7 @@ function update_software() {
 
 # add official Tor repository and Debian onion service mirrors
 function add_sources() {
+	DISTRO=$(lsb_release -si)
 	if ! grep -q "tor+http://sdscoq7snqtznauu.onion/torproject.org" /etc/apt/sources.list; then
 		if [ "$DISTRO" == "Debian"]; then
 			echo "== Removing previous sources"
