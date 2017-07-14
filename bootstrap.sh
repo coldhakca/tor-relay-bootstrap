@@ -40,28 +40,28 @@ function update_software() {
 	apt-get install -y lsb-release apt-transport-tor
 }
 
-# add official Tor repository
-function add_sources_ubuntu() {
-	if ! grep -q "tor+http://sdscoq7snqtznauu.onion/torproject.org" /etc/apt/sources.list; then
-		echo "==Adding the official Tor repository"
-		echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
-		 gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
-                 gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
-	fi
-}
-
 # add official Tor repository and Debian onion service mirrors
-function add_sources_debian() {
+function add_sources() {
 	if ! grep -q "tor+http://sdscoq7snqtznauu.onion/torproject.org" /etc/apt/sources.list; then
-    		echo "== Removing previous sources"
-		rm /etc/apt/sources.list
-    		echo "== Adding the official Tor repository"
-    		echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
-    		echo "== Switching to Debian's onion service mirrors"
-		echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs` main" >> /etc/apt/sources.list
-		echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs`-updates main">> /etc/apt/sources.list
-		gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
-    		gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
+		if [ "$DISTRO" == "Debian"]; then
+			echo "== Removing previous sources"
+			rm /etc/apt/sources.list
+			echo "== Adding the official Tor repository"
+			echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
+			echo "== Switching to Debian's onion service mirrors"
+			echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs` main" >> /etc/apt/sources.list
+			echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs`-updates main">> /etc/apt/sources.list
+			gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+			gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
+		elif ["$DISTRO"=="Ubuntu"]; then
+			echo "==Adding the official Tor repository"
+			echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
+			gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+			gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
+		else
+			echo "You do not appear to be running Debian or Ubuntu"
+			exit 1
+		fi
 	fi
 }
 
@@ -206,14 +206,7 @@ function print_final() {
 check_root
 suggest_user 
 update_software
-if [ "$DISTRO" == "Debian"]; then
-	add_sources_debian
-elif ["$DISTRO"=="Ubuntu"]; then
-	add_sources_ubuntu
-else
-	echo "You do not appear to be running Debian or Ubuntu"
-	exit 1
-fi
+add_sources
 update_sources
 install_tor
 configure_tor
