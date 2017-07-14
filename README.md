@@ -18,11 +18,16 @@ tor-relay-bootstrap does this:
 * Helps harden the ssh server
 * Gives instructions on what the sysadmin needs to manually do at the end
 
-To use it, set up a Debian server, SSH into it, switch to the root user, and:
+To use it, set up a Debian server, SSH into it, and:
 
 ```sh
-apt-get install -y git
+su -c apt-get install -y git
 git clone https://github.com/coldhakca/tor-relay-bootstrap.git
+```
+
+Switch to root user, and:
+
+```sh
 cd tor-relay-bootstrap
 ./bootstrap.sh
 ```
