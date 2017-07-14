@@ -43,7 +43,7 @@ function update_software() {
 function add_sources() {
 	DISTRO=$(lsb_release -si)
 	if ! grep -q "tor+http://sdscoq7snqtznauu.onion/torproject.org" /etc/apt/sources.list; then
-		if [ "$DISTRO" == "Debian"]; then
+		if [ "$DISTRO" == "Debian" ]; then
 			echo "== Removing previous sources"
 			rm /etc/apt/sources.list
 			echo "== Adding the official Tor repository"
@@ -54,7 +54,7 @@ function add_sources() {
 			echo "deb tor+http://sgvtcaew4bxjd7ln.onion/debian-security `lsb_release -cs`/updates main" >> /etc/apt/sources.list
 			gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
 			gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
-		elif ["$DISTRO"=="Ubuntu"]; then
+		elif [ "$DISTRO"=="Ubuntu" ]; then
 			echo "==Adding the official Tor repository"
 			echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
 			gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
