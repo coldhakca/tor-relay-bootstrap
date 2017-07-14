@@ -91,12 +91,13 @@ function create_instances() {
 	while [ $more == 1 ]; do
 		create_instance($instance)
 		instances+=($instance)
-		echo "Would you like to create another instance? [y/n]"
+		echo "Would you like to create another instance? [N/y/?]"
 		read response
 		if [ $response != "y" ]; do
 			more=0
 		else
 			instance=$((instance+1))
+		done
 		fi
 	done
 }
