@@ -42,18 +42,27 @@ function update_software() {
 # add official Tor repository and Debian onion service mirrors
 function add_sources() {
 	DISTRO=$(lsb_release -si)
+	SID=$(lsb_release -cs)
 	if ! grep -q "tor+http://sdscoq7snqtznauu.onion/torproject.org" /etc/apt/sources.list; then
 		if [ "$DISTRO" == "Debian" ]; then
-			echo "== Removing previous sources"
-			rm /etc/apt/sources.list
-			echo "== Adding the official Tor repository"
-			echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
-			echo "== Switching to Debian's onion service mirrors"
-			echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs` main" >> /etc/apt/sources.list
-			echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs`-updates main">> /etc/apt/sources.list
-			echo "deb tor+http://sgvtcaew4bxjd7ln.onion/debian-security `lsb_release -cs`/updates main" >> /etc/apt/sources.list
-			gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
-			gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
+			if [ "$SID" == "sid" ]; then
+				echo "== Removing previous sources"
+				rm /etc/apt/sources.list
+                                echo "== Adding the official Tor repository"
+                                echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
+                                echo "== Switching to Debian's onion service mirrors"
+                                echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs` main" >> /etc/apt/sources.list
+			else
+				echo "== Removing previous sources"
+				rm /etc/apt/sources.list
+				echo "== Adding the official Tor repository"
+				echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
+				echo "== Switching to Debian's onion service mirrors"
+				echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs` main" >> /etc/apt/sources.list
+				echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs`-updates main">> /etc/apt/sources.list
+				echo "deb tor+http://sgvtcaew4bxjd7ln.onion/debian-security `lsb_release -cs`/updates main" >> /etc/apt/sources.list
+				gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+				gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
 		elif [ "$DISTRO"=="Ubuntu" ]; then
 			echo "==Adding the official Tor repository"
 			echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
@@ -62,6 +71,7 @@ function add_sources() {
 		else
 			echo "You do not appear to be running Debian or Ubuntu"
 			exit 1
+			fi
 		fi
 	fi
 }
