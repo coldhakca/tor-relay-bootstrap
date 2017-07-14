@@ -7,12 +7,10 @@
 ##  Allows all loopback (lo0) traffic and drop all traffic to 127/8 that doesn't use lo0
 -A INPUT -i lo -j ACCEPT
 
+## allow Tor ORPort, DirPort
+
 ## allow incoming SSH
 -A INPUT -p tcp --dport 22 -j ACCEPT
-
-## allow Tor ORPort, DirPort
--A INPUT -p tcp --dport 9001 -j ACCEPT
--A INPUT -p tcp --dport 9030 -j ACCEPT
 
 ## ratelimit ICMP echo, allow all others
 -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s -j ACCEPT
