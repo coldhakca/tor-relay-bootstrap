@@ -10,7 +10,7 @@ tor-relay-bootstrap does this:
 * Installs and configures Tor to be a relay (but still requires you to manually edit torrc to set Nickname, ContactInfo, etc. for this relay)
 * Configures sane default firewall rules
 * Configures automatic updates
-* Installs tlsdate to ensure time is synced
+* Installs ntp to ensure time is synced (tlsdate is no longer available in Debian stable)
 * Installs monit and activate config to auto-restart all services
 * Helps harden the ssh server
 * Gives instructions on what the sysadmin needs to manually do at the end
