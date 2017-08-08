@@ -158,9 +158,9 @@ function install_aa() {
 	update-grub
 }
 
-# install tlsdate
-function install_td() {
-	apt-get install -y tlsdate
+# install ntp
+function install_ntp() {
+	apt-get install -y ntp
 }
 
 # install monit
@@ -225,7 +225,7 @@ configure_firewall
 install_f2b
 auto_update
 install_aa
-install_td
+install_ntp
 install_mt
 configure_ssh
 print_final
