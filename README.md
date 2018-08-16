@@ -12,6 +12,7 @@ tor-relay-bootstrap does this:
 * Configures automatic updates
 * Installs ntp to ensure time is synced (tlsdate is no longer available in Debian stable)
 * Installs monit and activate config to auto-restart all services
+* Installs unbound to reduce the number DNS queries leaving the node
 * Helps harden the ssh server
 * Gives instructions on what the sysadmin needs to manually do at the end
 

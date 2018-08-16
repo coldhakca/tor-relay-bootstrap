@@ -66,6 +66,35 @@ apt-get install -y monit
 cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
 service monit restart
 
+# install unbound
+apt-get install -y unbound
+
+# stop unbound service right after installation
+service unbound stop
+
+# generate configuration for unbound
+cat > /etc/unbound/unbound.conf <<EOF
+server:
+interface: 127.0.0.1
+access-control: 127.0.0.1 allow
+port: 53
+do-daemonize: yes
+num-threads: 1
+use-caps-for-id: yes
+harden-glue: yes
+hide-identity: yes
+hide-version: yes
+EOF
+
+# set system to use only local DNS resolver
+chattr -i /etc/resolv.conf
+sed -i 's/nameserver/#nameserver/g' /etc/resolv.conf
+echo "nameserver 127.0.0.1" >> /etc/resolv.conf
+chattr +i /etc/resolv.conf
+
+# start unbound service
+service unbound start
+
 # configure sshd
 ORIG_USER=$(logname)
 if [ -n "$ORIG_USER" ]; then
