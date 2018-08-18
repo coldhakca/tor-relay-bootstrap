@@ -7,8 +7,8 @@
 ##  Allows all loopback (lo0) traffic and drop all traffic to 127/8 that doesn't use lo0
 -A INPUT -i lo -j ACCEPT
 
-## allow incoming SSH
--A INPUT -p tcp --dport 22 -j ACCEPT
+## allows incoming SSH connections
+-A INPUT -p tcp -m state --state NEW --dport 22 -j ACCEPT
 
 ## allow Tor ORPort, DirPort
 -A INPUT -p tcp --dport 9001 -j ACCEPT
