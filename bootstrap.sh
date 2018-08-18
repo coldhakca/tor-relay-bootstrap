@@ -2,8 +2,8 @@
 
 # check for root
 if [[ $EUID -ne 0 ]]; then
-    echo "This script must be run as root" 1>&2
-    exit 1
+  echo "This script must be run as root" 1>&2
+  exit 1
 fi
 
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -13,23 +13,26 @@ echo "== Updating software"
 apt-get update
 apt-get dist-upgrade -y
 
-apt-get install -y lsb-release apt-transport-https
+# install additional supportive packages
+apt-get install -y lsb-release apt-transport-https htop iftop
 
 # add official Tor repository
 if ! grep -q "https://deb.torproject.org/torproject.org" /etc/apt/sources.list; then
     echo "== Adding the official Tor repository"
-    echo "deb https://deb.torproject.org/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
+    echo "deb https://deb.torproject.org/torproject.org $(lsb_release -cs) main" >> /etc/apt/sources.list
     gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
     gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
     apt-get update
 fi
 
-# install tor and related packages
+# install Tor and related packages
 echo "== Installing Tor and related packages"
 apt-get install -y deb.torproject.org-keyring tor tor-arm tor-geoipdb
+
+# stop Tor right after installation
 service tor stop
 
-# configure tor
+# copy Tor configuration
 cp $PWD/etc/tor/torrc /etc/tor/torrc
 
 # configure firewall rules
@@ -45,6 +48,7 @@ chmod 600 /etc/iptables/rules.v6
 iptables-restore < /etc/iptables/rules.v4
 ip6tables-restore < /etc/iptables/rules.v6
 
+# install fail2ban
 apt-get install -y fail2ban
 
 # configure automatic updates
@@ -72,19 +76,8 @@ apt-get install -y unbound
 # stop unbound service right after installation
 service unbound stop
 
-# generate configuration for unbound
-cat > /etc/unbound/unbound.conf <<EOF
-server:
-interface: 127.0.0.1
-access-control: 127.0.0.1 allow
-port: 53
-do-daemonize: yes
-num-threads: 1
-use-caps-for-id: yes
-harden-glue: yes
-hide-identity: yes
-hide-version: yes
-EOF
+# copy Tor configuration
+cp $PWD/etc/unbound/unbound.conf /etc/unbound/unbound.conf
 
 # set system to use only local DNS resolver
 chattr -i /etc/resolv.conf
@@ -98,25 +91,25 @@ service unbound start
 # configure sshd
 ORIG_USER=$(logname)
 if [ -n "$ORIG_USER" ]; then
-	echo "== Configuring sshd"
-	# only allow the current user to SSH in
-	echo "AllowUsers $ORIG_USER" >> /etc/ssh/sshd_config
-	echo "  - SSH login restricted to user: $ORIG_USER"
-	if grep -q "Accepted publickey for $ORIG_USER" /var/log/auth.log; then
-		# user has logged in with SSH keys so we can disable password authentication
-		sed -i '/^#\?PasswordAuthentication/c\PasswordAuthentication no' /etc/ssh/sshd_config
-		echo "  - SSH password authentication disabled"
-		if [ $ORIG_USER == "root" ]; then
-			# user logged in as root directly (rather than using su/sudo) so make sure root login is enabled
-			sed -i '/^#\?PermitRootLogin/c\PermitRootLogin yes' /etc/ssh/sshd_config
-		fi
-	else
-		# user logged in with a password rather than keys
-		echo "  - You do not appear to be using SSH key authentication.  You should set this up manually now."
-	fi
-	service ssh reload
+  echo "== Configuring sshd"
+  # only allow the current user to SSH in
+  echo "AllowUsers $ORIG_USER" >> /etc/ssh/sshd_config
+  echo "  - SSH login restricted to user: $ORIG_USER"
+  if grep -q "Accepted publickey for $ORIG_USER" /var/log/auth.log; then
+    # user has logged in with SSH keys so we can disable password authentication
+    sed -i '/^#\?PasswordAuthentication/c\PasswordAuthentication no' /etc/ssh/sshd_config
+    echo "  - SSH password authentication disabled"
+    if [ $ORIG_USER == "root" ]; then
+      # user logged in as root directly (rather than using su/sudo) so make sure root login is enabled
+      sed -i '/^#\?PermitRootLogin/c\PermitRootLogin yes' /etc/ssh/sshd_config
+    fi
+  else
+    # user logged in with a password rather than keys
+    echo "  - You do not appear to be using SSH key authentication.  You should set this up manually now."
+  fi
+  service ssh reload
 else
-	echo "== Could not configure sshd automatically.  You will need to do this manually."
+  echo "== Could not configure sshd automatically.  You will need to do this manually."
 fi
 
 # final instructions
