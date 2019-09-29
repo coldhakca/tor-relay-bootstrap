@@ -10,10 +10,10 @@ PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # update software
 echo "== Updating software"
-apt-get update
-apt-get dist-upgrade -y
+apt update
+apt upgrade -y
 
-apt-get install -y lsb-release apt-transport-https
+apt install -y lsb-release apt-transport-https
 
 # add official Tor repository
 if ! grep -q "https://deb.torproject.org/torproject.org" /etc/apt/sources.list; then
@@ -21,12 +21,12 @@ if ! grep -q "https://deb.torproject.org/torproject.org" /etc/apt/sources.list; 
     echo "deb https://deb.torproject.org/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
     gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
     gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
-    apt-get update
+    apt update
 fi
 
 # install tor and related packages
 echo "== Installing Tor and related packages"
-apt-get install -y deb.torproject.org-keyring tor tor-arm tor-geoipdb
+apt install -y deb.torproject.org-keyring tor tor-arm tor-geoipdb
 service tor stop
 
 # configure tor
@@ -34,10 +34,10 @@ cp $PWD/etc/tor/torrc /etc/tor/torrc
 
 # configure firewall rules
 echo "== Configuring firewall rules"
-apt-get install -y debconf-utils
+apt install -y debconf-utils
 echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | debconf-set-selections
 echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | debconf-set-selections
-apt-get install -y iptables iptables-persistent
+apt install -y iptables iptables-persistent
 cp $PWD/etc/iptables/rules.v4 /etc/iptables/rules.v4
 cp $PWD/etc/iptables/rules.v6 /etc/iptables/rules.v6
 chmod 600 /etc/iptables/rules.v4
@@ -45,24 +45,24 @@ chmod 600 /etc/iptables/rules.v6
 iptables-restore < /etc/iptables/rules.v4
 ip6tables-restore < /etc/iptables/rules.v6
 
-apt-get install -y fail2ban
+apt install -y fail2ban
 
 # configure automatic updates
 echo "== Configuring unattended upgrades"
-apt-get install -y unattended-upgrades apt-listchanges
+apt install -y unattended-upgrades apt-listchanges
 cp $PWD/etc/apt/apt.conf.d/20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
 service unattended-upgrades restart
 
 # install apparmor
-apt-get install -y apparmor apparmor-profiles apparmor-utils
+apt install -y apparmor apparmor-profiles apparmor-utils
 sed -i.bak 's/GRUB_CMDLINE_LINUX="\(.*\)"/GRUB_CMDLINE_LINUX="\1 apparmor=1 security=apparmor"/' /etc/default/grub
 update-grub
 
 # install ntp (tlsdate is no longer available in Debian stable)
-apt-get install -y ntp
+apt install -y ntp
 
 # install monit
-apt-get install -y monit
+apt install -y monit
 cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
 service monit restart
 
