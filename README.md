@@ -22,6 +22,6 @@ To use it, set up a Debian server, SSH into it, and:
 
 ```sh
 sudo apt install -y git
-git clone https://github.com/coldhakca/tor-relay-bootstrap.git
+git clone https://github.com/Sixdsn/tor-relay-bootstrap.git
 sudo ./bootstrap.sh
 ```
