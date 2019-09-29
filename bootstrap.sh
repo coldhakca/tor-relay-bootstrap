@@ -15,7 +15,7 @@ echo "== Updating software"
 apt update
 apt upgrade -y
 
-apt install -y lsb-release apt-transport-https
+apt install -y lsb-release apt-transport-https gpg dirmngr curl
 
 # add official Tor repository
 if ! grep -q "https://deb.torproject.org/torproject.org" /etc/apt/sources.list; then
