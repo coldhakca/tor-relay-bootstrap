@@ -98,8 +98,6 @@ echo "== Try SSHing into this server again in a new window, to confirm the firew
 echo ""
 echo "== Edit /etc/tor/torrc"
 echo "  - Set Address, Nickname, Contact Info, and MyFamily for your Tor relay"
-echo "  - Optional: include a Bitcoin address in the 'ContactInfo' line"
-echo "    - This will enable you to receive donations from OnionTip.com"
 echo "  - Optional: limit the amount of data transferred by your Tor relay (to avoid additional hosting costs)"
 echo "    - Uncomment the lines beginning with '#AccountingMax' and '#AccountingStart'"
 echo ""
