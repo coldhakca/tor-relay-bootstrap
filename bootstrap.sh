@@ -130,6 +130,7 @@ function configure_firewall() {
 }
 
 function install_f2b() {
+    echo "== Installing fail2ban"
     apt-get install -y fail2ban
 }
 
@@ -143,6 +144,7 @@ function auto_update() {
 
 # install apparmor
 function install_aa() {
+    echo "== Installing AppArmor"
     apt-get install -y apparmor apparmor-profiles apparmor-utils
     sed -i.bak 's/GRUB_CMDLINE_LINUX="\(.*\)"/GRUB_CMDLINE_LINUX="\1 apparmor=1 security=apparmor"/' /etc/default/grub
     update-grub
@@ -150,12 +152,14 @@ function install_aa() {
 
 # install ntp
 function install_ntp() {
+    echo "== Installing ntp"
     apt-get install -y ntp
 }
 
 # install monit
 function install_mt() {
     if apt-cache search ^monit$ 2>&1 | grep -q monit; then
+	echo "== Installing monit"
 	apt-get install -y monit
 	cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
 	service monit restart
@@ -190,6 +194,23 @@ function configure_ssh() {
     fi
 }
 
+# install unbound
+function install_unbound() {
+    echo "== Installing Unbound"
+    apt-get install -y unbound
+    service unbound stop
+    cp $PWD/etc/unbound/unbound.conf /etc/unbound/unbound.conf
+
+    # set system to use only local DNS resolver
+    chattr -i /etc/resolv.conf
+    sed -i 's/nameserver/#nameserver/g' /etc/resolv.conf
+    echo "nameserver 127.0.0.1" >> /etc/resolv.conf
+    chattr +i /etc/resolv.conf
+
+    # start unbound service
+    service unbound start
+}
+
 # final instructions
 function print_final() {
     echo ""
@@ -222,4 +243,5 @@ install_aa
 install_ntp
 install_mt
 configure_ssh
+install_unbound
 print_final
