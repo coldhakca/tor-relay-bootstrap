@@ -211,6 +211,14 @@ function install_unbound() {
     service unbound start
 }
 
+# install nyx
+function install_nyx() {
+    echo "== Installing Nyx"
+
+    apt-get install -y python-pip
+    pip install nyx
+}
+
 # final instructions
 function print_final() {
     echo ""
@@ -244,4 +252,5 @@ install_ntp
 install_mt
 configure_ssh
 install_unbound
+install_nyx
 print_final
