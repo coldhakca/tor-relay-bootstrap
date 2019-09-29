@@ -190,6 +190,22 @@ function configure_ssh() {
     fi
 }
 
+# install unbound
+function install_unbound() {
+    apt-get install -y unbound
+    service unbound stop
+    cp $PWD/etc/unbound/unbound.conf /etc/unbound/unbound.conf
+
+    # set system to use only local DNS resolver
+    chattr -i /etc/resolv.conf
+    sed -i 's/nameserver/#nameserver/g' /etc/resolv.conf
+    echo "nameserver 127.0.0.1" >> /etc/resolv.conf
+    chattr +i /etc/resolv.conf
+
+    # start unbound service
+    service unbound start
+}
+
 # final instructions
 function print_final() {
     echo ""
@@ -222,4 +238,5 @@ install_aa
 install_ntp
 install_mt
 configure_ssh
+install_unbound
 print_final
