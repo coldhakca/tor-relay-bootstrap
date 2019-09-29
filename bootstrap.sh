@@ -65,9 +65,11 @@ update-grub
 apt install -y ntp
 
 # install monit
-apt install -y monit
-cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
-service monit restart
+if apt search ^monit$ | grep -q monit; then
+    apt install -y monit
+    cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
+    service monit restart
+fi
 
 # configure sshd
 ORIG_USER=$(logname)
