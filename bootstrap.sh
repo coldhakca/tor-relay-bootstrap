@@ -76,6 +76,7 @@ function configure_tor() {
     echo "== Copying Torrc"
     cp $PWD/etc/tor/torrc /etc/tor/torrc
     service tor restart
+    echo "== Waiting 15s for Tor service to restart"
     sleep 15 #wait for tor service
     apt-get update
 }
