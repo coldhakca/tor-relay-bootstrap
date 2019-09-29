@@ -15,13 +15,15 @@ echo "== Updating software"
 apt update
 apt upgrade -y
 
-apt install -y lsb-release apt-transport-https
+apt install -y lsb-release apt-transport-https gpg dirmngr curl
 
 # add official Tor repository
-if ! grep -q "https://deb.torproject.org/torproject.org" /etc/apt/sources.list; then
+APT_SOURCES_FILE="/etc/apt/sources.list.d/torproject.list"
+if ! grep -q "https://deb.torproject.org/torproject.org" $APT_SOURCES_FILE; then
     echo "== Adding the official Tor repository"
-    echo "deb https://deb.torproject.org/torproject.org `lsb_release -cs` main" >> /etc/apt/sources.list
-    gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+    echo "deb https://deb.torproject.org/torproject.org `lsb_release -cs` main" >> $APT_SOURCES_FILE
+    echo "deb-src https://deb.torproject.org/torproject.org `lsb_release -cs` main" >> $APT_SOURCES_FILE
+    curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import
     gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
     apt update
 fi
@@ -64,16 +66,22 @@ update-grub
 apt install -y ntp
 
 # install monit
-apt install -y monit
-cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
-service monit restart
+apt search ^monit$
+if apt search ^monit$ | grep -q monit; then
+    apt install -y monit
+    cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
+    service monit restart
+fi
 
 # configure sshd
 ORIG_USER=$(logname)
 if [ -n "$ORIG_USER" ]; then
 	echo "== Configuring sshd"
 	# only allow the current user to SSH in
-	echo "AllowUsers $ORIG_USER" >> /etc/ssh/sshd_config
+	if ! grep -q "AllowUsers $ORIG_USER" /etc/ssh/sshd_config; then
+	    echo "" >> /etc/ssh/sshd_config
+	    echo "AllowUsers $ORIG_USER" >> /etc/ssh/sshd_config
+	fi
 	echo "  - SSH login restricted to user: $ORIG_USER"
 	if grep -q "Accepted publickey for $ORIG_USER" /var/log/auth.log; then
 		# user has logged in with SSH keys so we can disable password authentication
@@ -101,7 +109,7 @@ echo "  - Set Address, Nickname, Contact Info, and MyFamily for your Tor relay"
 echo "  - Optional: limit the amount of data transferred by your Tor relay (to avoid additional hosting costs)"
 echo "    - Uncomment the lines beginning with '#AccountingMax' and '#AccountingStart'"
 echo ""
-echo "== Consider having /etc/apt/sources.list update over HTTPS and/or HTTPS+Tor"
+echo "== Consider having ${APT_SOURCES_FILE} update over HTTPS and/or HTTPS+Tor"
 echo "   see https://guardianproject.info/2014/10/16/reducing-metadata-leakage-from-software-updates/"
 echo "   for more details"
 echo ""
