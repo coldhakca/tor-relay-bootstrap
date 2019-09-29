@@ -8,7 +8,6 @@
 #####################################################################
 
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-instances=()
 
 set -e
 
@@ -42,10 +41,11 @@ function update_software() {
 
 # add official Tor repository and Debian onion service mirrors
 function add_sources() {
+    APT_SOURCES_FILE="/etc/apt/sources.list.d/torproject.list"
     DISTRO=$(lsb_release -si)
     SID=$(lsb_release -cs)
     if ! grep -q "tor+http://sdscoq7snqtznauu.onion/torproject.org" $APT_SOURCES_FILE; then
-	if [ "$DISTRO" == "Debian" or "$DISTRO"=="Ubuntu"]; then
+	if [ "$DISTRO" == "Debian" -o "$DISTRO"=="Ubuntu" ]; then
 	    echo "== Removing previous sources"
 	    rm $APT_SOURCES_FILE
             echo "== Adding the official Tor repository"
@@ -75,8 +75,13 @@ function install_tor() {
     service tor stop
 }
 
+function configure_tor() {
+    echo "Todo"
+}
+
 # create tor instance
-function create_instance(instance) {
+function create_instance() {
+    instance=$1
     tor-instance-create $instance
 }
 
@@ -85,8 +90,7 @@ function create_instances() {
     instance=0
     more=1
     while [ $more == 1 ]; do
-	create_instance($instance)
-	instances+=($instance)
+	create_instance $instance
 	echo "Would you like to create another instance? [N/y/?]"
 	read response
 	if [ $response != "y" ]; then
@@ -98,7 +102,8 @@ function create_instances() {
 }
 
 # create firewall rule for a single instance
-function instance_rules(instance) {
+function instance_rules() {
+    instance=$1
     # insert rules after ## allow Tor ORPort, DirPort
     orport=$((instance+9001))
     dirport=$((instance+9030))
@@ -206,7 +211,6 @@ check_root
 suggest_user 
 update_software
 add_sources
-update_sources
 install_tor
 configure_tor
 configure_firewall
