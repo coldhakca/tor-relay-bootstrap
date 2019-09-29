@@ -34,9 +34,9 @@ function suggest_user () {
 
 function update_software() {
     echo "== Updating software"
-    apt update
-    apt upgrade -y
-    apt install -y lsb-release apt-transport-tor gpg dirmngr curl
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y lsb-release apt-transport-tor gpg dirmngr curl
 }
 
 # add official Tor repository and Debian onion service mirrors
@@ -44,39 +44,40 @@ function add_sources() {
     APT_SOURCES_FILE="/etc/apt/sources.list.d/torproject.list"
     DISTRO=$(lsb_release -si)
     SID=$(lsb_release -cs)
-    if ! grep -q "tor+http://sdscoq7snqtznauu.onion/torproject.org" $APT_SOURCES_FILE; then
-	if [ "$DISTRO" == "Debian" -o "$DISTRO"=="Ubuntu" ]; then
-	    echo "== Removing previous sources"
-	    rm $APT_SOURCES_FILE
-            echo "== Adding the official Tor repository"
-            echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> $APT_SOURCES_FILE
-	    curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import
-	    gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
-	    if [ "$DISTRO" == "Debian" ]; then
-		echo "== Switching to Debian's onion service mirrors"
-		echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs` main" >> $APT_SOURCES_FILE
-		if [ "$SID" != "sid" ]; then
-		    echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs`-updates main">> $APT_SOURCES_FILE
-		    echo "deb tor+http://sgvtcaew4bxjd7ln.onion/debian-security `lsb_release -cs`/updates main" >> $APT_SOURCES_FILE
-		fi
+    if [ "$DISTRO" == "Debian" -o "$DISTRO"=="Ubuntu" ]; then
+	echo "== Removing previous sources"
+	rm -f $APT_SOURCES_FILE
+	echo "== Adding the official Tor repository"
+	echo "deb tor+http://sdscoq7snqtznauu.onion/torproject.org `lsb_release -cs` main" >> $APT_SOURCES_FILE
+	curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import
+	gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
+	if [ "$DISTRO" == "Debian" ]; then
+	    echo "== Switching to Debian's onion service mirrors"
+	    echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs` main" >> $APT_SOURCES_FILE
+	    if [ "$SID" != "sid" ]; then
+		echo "deb tor+http://vwakviie2ienjx6t.onion/debian `lsb_release -cs`-updates main">> $APT_SOURCES_FILE
+		echo "deb tor+http://sgvtcaew4bxjd7ln.onion/debian-security `lsb_release -cs`/updates main" >> $APT_SOURCES_FILE
 	    fi
-	else
-	    echo "You do not appear to be running Debian or Ubuntu"
-	    exit 1
 	fi
+    else
+	echo "You do not appear to be running Debian or Ubuntu"
+	exit 1
     fi
-    apt update
 }
 
 # install tor and related packages
 function install_tor() {
     echo "== Installing Tor and related packages"
-    apt install -y deb.torproject.org-keyring tor tor-arm tor-geoipdb
+    apt-get install -y deb.torproject.org-keyring tor tor-arm tor-geoipdb
     service tor stop
 }
 
 function configure_tor() {
-    echo "Todo"
+    echo "== Copying Torrc"
+    cp $PWD/etc/tor/torrc /etc/tor/torrc
+    service tor restart
+    sleep 15 #wait for tor service
+    apt-get update
 }
 
 # create tor instance
@@ -115,7 +116,7 @@ function instance_rules() {
 # configure firewall rules
 function configure_firewall() {
     echo "== Configuring firewall rules"
-    apt install -y debconf-utils iptables iptables-persistent
+    apt-get install -y debconf-utils iptables iptables-persistent
     echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | debconf-set-selections
     echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | debconf-set-selections
     cp $PWD/etc/iptables/rules.v4 /etc/iptables/rules.v4
@@ -128,33 +129,33 @@ function configure_firewall() {
 }
 
 function install_f2b() {
-    apt install -y fail2ban
+    apt-get install -y fail2ban
 }
 
 # configure automatic updates
 function auto_update() {
     echo "== Configuring unattended upgrades"
-    apt install -y unattended-upgrades apt-listchanges
+    apt-get install -y unattended-upgrades apt-listchanges
     cp $PWD/etc/apt/apt.conf.d/20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
     service unattended-upgrades restart
 }
 
 # install apparmor
 function install_aa() {
-    apt install -y apparmor apparmor-profiles apparmor-utils
+    apt-get install -y apparmor apparmor-profiles apparmor-utils
     sed -i.bak 's/GRUB_CMDLINE_LINUX="\(.*\)"/GRUB_CMDLINE_LINUX="\1 apparmor=1 security=apparmor"/' /etc/default/grub
     update-grub
 }
 
 # install ntp
 function install_ntp() {
-    apt install -y ntp
+    apt-get install -y ntp
 }
 
 # install monit
 function install_mt() {
-    if apt search ^monit$ | grep -q monit; then
-	apt install -y monit
+    if apt-cache search ^monit$ 2>&1 | grep -q monit; then
+	apt-get install -y monit
 	cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
 	service monit restart
     fi
