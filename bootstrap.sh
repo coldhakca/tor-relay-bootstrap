@@ -77,7 +77,7 @@ function configure_tor() {
     cp $PWD/etc/tor/torrc /etc/tor/torrc
     service tor restart
     echo "== Waiting for Tor Socks5 service to be ready"
-    while [ echo -e 'PROTOCOLINFO\r\n' | nc 127.0.0.1 9050  | grep -qa tor ]; do
+    while echo -e 'PROTOCOLINFO\r\n' | nc 127.0.0.1 9050  | grep -qa tor; do
 	sleep 1
     done
     apt-get update
