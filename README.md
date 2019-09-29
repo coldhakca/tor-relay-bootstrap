@@ -18,7 +18,7 @@ tor-relay-bootstrap does this:
 * Helps harden the ssh server
 * Gives instructions on what the sysadmin needs to manually do at the end
 
-To use it, set up a Debian server, SSH into it, and:
+To use it, set up a Debian or Ubuntu server, SSH into it, and:
 
 ```sh
 sudo apt install -y git
