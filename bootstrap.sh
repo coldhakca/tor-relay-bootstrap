@@ -24,6 +24,7 @@ if ! grep -q "https://deb.torproject.org/torproject.org" $APT_SOURCES_FILE; then
     echo "deb https://deb.torproject.org/torproject.org `lsb_release -cs` main" >> $APT_SOURCES_FILE
     echo "deb-src https://deb.torproject.org/torproject.org `lsb_release -cs` main" >> $APT_SOURCES_FILE
     curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import
+    gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
     apt update
 fi
 
@@ -65,6 +66,7 @@ update-grub
 apt install -y ntp
 
 # install monit
+apt search ^monit$
 if apt search ^monit$ | grep -q monit; then
     apt install -y monit
     cp $PWD/etc/monit/conf.d/tor-relay.conf /etc/monit/conf.d/tor-relay.conf
@@ -77,9 +79,10 @@ if [ -n "$ORIG_USER" ]; then
 	echo "== Configuring sshd"
 	# only allow the current user to SSH in
 	if ! grep -q "AllowUsers $ORIG_USER" /etc/ssh/sshd_config; then
+	    echo "" >> /etc/ssh/sshd_config
 	    echo "AllowUsers $ORIG_USER" >> /etc/ssh/sshd_config
-	    echo "  - SSH login restricted to user: $ORIG_USER"
 	fi
+	echo "  - SSH login restricted to user: $ORIG_USER"
 	if grep -q "Accepted publickey for $ORIG_USER" /var/log/auth.log; then
 		# user has logged in with SSH keys so we can disable password authentication
 		sed -i '/^#\?PasswordAuthentication/c\PasswordAuthentication no' /etc/ssh/sshd_config
